@@ -9,7 +9,6 @@
 import os
 import re
 import sys
-from urllib2 import urllib
 import urllib.request
 
 """Logpuzzle exercise
@@ -31,7 +30,7 @@ def read_urls(filename):
 
     urls = set()
 
-    pictures = re.findall('GET \/(.*?\.jpg)', open(filename).read())
+    pictures = re.findall('GET (\/.*?\.jpg)', open(filename).read())
 
     for picture in pictures:
         urls.add(domain + picture)
@@ -47,22 +46,26 @@ def download_images(img_urls, dest_dir):
     Creates the directory if necessary.
     """
     # +++your code here+++
+
     if not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
 
     os.chdir(dest_dir)
 
+    image_tags = []
 
     for url in img_urls:
-        image_name = re.findall("\/(.*?\.jpg)", url)
+        image_name = url.split("/")[-1]
 
-        request = urllib.request.Request(url)
-        response = urllib.request.urlopen(request)
+        response = urllib.request.urlopen(url)
 
-        image = open(url, "w")
-        image.write(response.read().decode('utf-8'))
-    #print(dest_dir)
-    #os.open(dest_dir, os.O_RDONLY)
+        image = open(image_name, "wb")
+        image.write(response.read())
+
+        image_tags.append('<img src="{0}">'.format(image_name))
+
+    html_file = open("index.html", "w")
+    html_file.write("<html><body>{0}</body></html>".format(''.join(image_tags)))
 
 
 def main():
